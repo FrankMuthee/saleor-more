@@ -1,0 +1,1 @@
+El usuario {{ user_name }} ha creado una orden de compra, para revisarla seguir el siguiente enlace:

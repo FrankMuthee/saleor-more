@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load as_vertical_form from bootstrap %}
+{% load i18n %}
+
+{% block title %}{% trans "Login" %} — {{ block.super }}{% endblock %}
+
+{%block style%}
+<link rel="stylesheet" href="/static/web_shop/css/cart.css">
+{%endblock%}
+
+{% block content %}
+<div id="login-container" class="container">
+    {%if next == 'checkout'%}
+    <div class='alert alert-success'>
+        Para continuar con la órden de compra por favor inicia sesión o se registra un usuario nuevo rápidamente.
+    </div>
+    {%endif%}
+    <div class="row">
+        <div class="col-sm-5">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form method="post" action="{%  url 'login' %}">
+                        {% csrf_token %}
+                        <fieldset>
+                            <legend>{% trans 'Log in' %}</legend>
+                            {{ form|as_vertical_form }}
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <input type="hidden" name="form_name" value="login" />
+                        </fieldset>
+
+                        <div class="form-group">
+                            <button class="btn btn-default cartbtn-green">
+                                {% trans "Log in" %}
+                            </button>
+                            <a class="btn btn-secondary" href="{% url 'request_email' %}">{% trans "Olvidé mi contraseña" %}</a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form id='reg-form' method="post" action="{%  url 'login' %}">
+                        {% csrf_token %}
+                        <fieldset>
+                            <legend>{% trans 'Registro' %}</legend>
+                            {{ form_register|as_vertical_form }}
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <input type="hidden" name="form_name" value="register" />
+                        </fieldset>
+
+                        <div class="form-group">
+                            <button class="btn btn-default cartbtn-green">
+                                {% trans "Registrarse" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+        
+        $('#reg-form .form-group.repeat_email').hide();
+        $('#reg-form .form-group.repeat_password').hide();
+
+        $('#reg-form #id_email').focus(function(){
+                $('.form-group.repeat_email').show(250);
+                });
+        $('#reg-form #id_password').focus(function(){
+                $('.form-group.repeat_password').show(250);
+                });
+ 
+        });
+</script>
+{% endblock %}

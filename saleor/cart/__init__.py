@@ -64,8 +64,12 @@ class Cart(cart.Cart):
                 # TODO: Provide error message
                 continue
             else:
-                variant = product.variants.get_subclass(
-                    pk=item.data['variant_id'])
+                try:
+                    variant = product.variants.get_subclass(
+                        pk=item.data['variant_id'])
+                except:
+                    # TODO important: Si no hay variante usar prod, principal, esto puede ocasionar problemas
+                    variant = product.get_virtual_variant()
             quantity = item.quantity
             cart.add(variant, quantity=quantity, check_quantity=False,
                      skip_session_cart=True)

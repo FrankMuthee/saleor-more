@@ -1,0 +1,31 @@
+{% load at_size from images %}
+{% with images=product.images.all %}
+<div class="product-carousel-cont">
+            <div id="product-carousel" class="carousel slide" data-ride="carousel">
+               
+                <div class="carousel-inner">
+                    {% for image in images %}
+                    <div class="item{% if forloop.first %} active{% endif %}">
+                            <img class="img-responsive" src="{{ image|at_size:"normal" }}" alt="">
+                        
+                    </div>
+                    {% endfor %}
+                </div>
+
+               
+                <a class="left carousel-control" href="#product-carousel" data-slide="prev">
+                    {#LEFT #}
+                </a>
+                <a class="right carousel-control" href="#product-carousel" data-slide="next">
+                    {#RIGHT #}
+                </a>
+            </div>
+
+            <div class="product-gallery-thumbs">
+                {% for image in images %}
+                <img  src="{{ image|at_size:"thumb_detail" }}" class="product-gallery-item">
+                {% endfor %}
+            </div>
+            <div class='clr'></div>
+        </div>
+        {% endwith %}

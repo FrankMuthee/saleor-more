@@ -1,0 +1,20 @@
+{% extends "checkout/address.html" %}
+
+{% load as_vertical_form from bootstrap %}
+{% load i18n %}
+
+{% block use_this_address %}
+    <button type="submit" class="btn {% if entry.is_selected %}btn-primary{% else %}btn-default{% endif %} btn-lg col-sm-12">{% trans "Bill to this address" %}</button>
+{% endblock %}
+
+{% block extra_forms %}
+    {% if not user.is_authenticated %}
+        {{ step.forms.anonymous|as_vertical_form }}
+    {% endif %}
+{% endblock extra_forms %}
+
+{% block form_submit %}
+    <button type="submit" class="btn btn-primary">
+        {% trans "Bill to this address" %}
+    </button>
+{% endblock %}

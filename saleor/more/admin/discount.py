@@ -9,6 +9,6 @@ class CatalogDiscountRuleInline(admin.StackedInline):
 class CatalogDiscountAdmin(admin.ModelAdmin):
     model = CatalogDiscount
     inlines = [CatalogDiscountRuleInline]
-    change_form_template = 'web_shop/admin/change_form.html'
+    change_form_template = 'more/admin/change_form.html'
     list_display = ('id', 'name', 'description','activated_by_coupon' ,'coupon', 'date_from', 'date_to', 'enabled')
     list_display_links = ('id', 'name')

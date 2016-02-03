@@ -1,0 +1,104 @@
+{% extends "web_shop/checkout/details.html" %}
+{% load gross from prices_i18n %}
+{% load tax from prices_i18n %}
+{% load i18n %}
+
+{% block forms %}
+    <div class="row">
+        <div class="col-sm-6">
+            <h3> Detalles de la órden</h3>
+
+            {% with total=checkout.get_total %}
+                <p>
+                    Total:
+                    <strong>$ {{ total.gross|floatformat:2  }}</strong>
+                    {% if total.tax %}
+                        ({% blocktrans with tax=total.tax|floatformat:2 currency=total.currency %}includes {{ tax }} <span class="currency">{{ currency }}</span> tax{% endblocktrans %})
+                    {% endif %}
+                </p>
+            {% endwith %}
+        </div>
+    </div>
+
+    {% for step in checkout.delivery_steps %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Grupo de productos #{{ forloop.counter }}
+            </div>
+            <div class="panel-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-4">{% trans "Name" %}</th>
+                            <th class="col-sm-2">{% trans "Price" %}</th>
+                            <th class="col-sm-2">{% trans "Subtotal" %}</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th class="col-sm-4"></th>
+                            <th class="col-sm-2">{% trans "Total" %}</th>
+                            <th class="col-sm-2">$ {{ step.group.get_total_with_delivery.gross|floatformat:2  }}</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        {% for item in step.group %}
+                            <tr>
+                                <td class="col-sm-4">{{ item.product }}{% if item.quantity != 1 %} <em>×{{ item.quantity }}</em>{% endif %} &nbsp;(ref: {{item.product.product.sku}})</td>
+                                <td class="col-sm-2">$ {{  item.get_price_per_item.gross|floatformat:2  }}</td>
+                                <td class="col-sm-2">$ {{  item.get_total.gross|floatformat:2  }}</td>
+                            </tr>
+                        {% endfor %}
+                        {% if step.group.get_delivery_total.gross %}
+                            <tr>
+                                <td class="col-sm-4">
+                                    {% trans "Shipping" %} ({{ step.group }})
+                                </td>
+                                <td class="col-sm-2">$ {{ step.group.get_delivery_total.gross|floatformat:2  }}</td>
+                                <td class="col-sm-2">$ {{ step.group.get_delivery_total.gross|floatformat:2  }}</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                {% if step.group.email %}
+                    <p>{% trans "Will be sent to" %} {{ step.group.email }}</p>
+                {% elif step.group.address %}
+                    <p>Será enviado a:  {% include "userprofile/snippets/address-short.html" with address=step.group.address %}</p>
+                {% else %}
+                    <p class="text-danger">No se ha especificado una dirección</p>
+                {% endif %}
+                <p><a href="{{ step.get_absolute_url }}">Editar datos de envío</a></p>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% with total=checkout.get_total %}
+        <p>
+            El total a pagar será:
+            <strong>$ {{ total.gross|floatformat:2  }} *</strong> <br>(* No incluye gastos de envío)
+            {% if total.tax %}
+                ({% blocktrans with tax=total.tax|floatformat:2 currency=total.currency %}includes {{ tax }} <span class="currency">{{ currency }}</span> tax{% endblocktrans %})
+            {% endif %}
+        </p>
+    {% endwith %}
+
+    {% if all_steps_valid %}
+        <form method="post">
+            {% csrf_token %}
+            <p>
+                <button type="submit" class="btn btn-default btn-lg cartbtn-orange">
+                        Generar órden de compra
+                </button>
+            </p>
+        </form>
+    {% else %}
+        <div class="alert alert-danger">
+            <p> Por favor diligencie toda la información en los pasos anteriores para continuar</p>
+        </div>
+    {% endif %}
+{% endblock forms %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/order_details.js"></script>
+{% endblock footer_scripts %}

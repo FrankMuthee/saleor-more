@@ -1,0 +1,13 @@
+<h2>Products List</h2>
+<ul class='products_list'>
+        {%for product in products_list%}
+        <li>
+        <div>
+        {% if product.images.exists %}
+        <a href='{%url 'product_detail' pk=product.pk slug=product.get_slug %}'><span class='iblock'></span><img src="{{  product.images.first.image.crop.128x128  }}" alt="Image"></a>
+        </div>
+        {%endif%}
+        <a href='{%url 'product_detail' pk=product.pk slug=product.get_slug %}'>{{product}} <br/>${{product.price.net}}</a>
+        </li>
+        {%endfor%}
+</ul>

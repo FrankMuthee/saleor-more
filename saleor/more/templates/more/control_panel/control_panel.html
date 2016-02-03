@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Panel de control" %} — {{ block.super }}{% endblock %}
+
+{%block style%}
+<link rel="stylesheet" href="/static/web_shop/css/cart.css">
+{%endblock%}
+
+{% block content %}
+<div id="settings-container" class="container">
+
+    <ul class="nav nav-pills nav-justified" style='margin-top: 50px'>
+        <li class="{% block active_settings %}{% endblock %}">
+            <a href="{% url 'account_settings' %}">Mis datos personales</a>
+        </li>
+        <li class="{% block active_orders %}{% endblock %}">
+            <a href="{% url 'orders_history' %}">Mis compras realizadas</a>
+        </li>
+    </ul>
+{% block control_panel_content %}{% endblock %}
+</div>
+
+{% endblock content %}

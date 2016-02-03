@@ -1,0 +1,113 @@
+{% for attrib, values in attributes.items%}
+    <h4>{{ attrib }}</h4>
+    {#attr_type = 2 is COLOR #}
+    <div class='btn-group attr_input {%if attrib.attr_type == 2%} attr_color {%else%} attr_normal{%endif%}' data-toggle='buttons'>
+
+    {% for v in values%}
+        {%if attrib.attr_type == 2%}
+        <label style='background: {{v.color_extra}};' class='btn btn-default color_box  attr_opt' data-attr='{{v}}'><input type="radio" name="option_{{attrib.pk}}" data-attr='{{v}}'></label>
+        {%else%}
+        <label  class='btn btn-default attr_opt' data-attr='{{v}}'> <input type="radio" name="option_{{attrib.pk}}" > {{v.value}}</label>
+        {%endif%}
+    {% endfor %}
+    </div>
+
+
+{% endfor %}
+
+
+<script>
+    $(document).ready(function(){
+            var attr_variants_map = {{attrs_variant|safe}};
+            var selected_combination = '';
+            //attr_input is an attribute set (attribute group like color, size, etc)
+            //attr_opt is an option of an attribute set
+            //selected_combination string code that represents a selected  combination of attributes (eg: color + size + other)
+            // selected_combination is a key of attr_variants_map
+            
+            function update_combination() {
+                /*Update attribute values combination  according to active attr_opts
+                 Also gets  product_variant based on final selected_combination
+                 */
+                // Get active element for each attribute group
+                selected_combination = '';
+                $('.attr_input').each(
+                    function (index) {
+                        var inp = $('.attr_opt.active', this);
+                        if (inp.length) {
+                        selected_combination += '+'+inp.attr('data-attr');
+                        }
+                    }
+                    );
+                // remove first +
+                selected_combination = selected_combination.substring(1);
+                if(selected_combination in  attr_variants_map) {
+                    //update selection
+                    $('#id_variant').prop('value', attr_variants_map[selected_combination]);
+                    $('#cartadd_btn').removeClass('disabled'); //Enable addtocart btn
+                }
+                else {
+                    $('#cartadd_btn').addClass('disabled');
+                }
+            }
+
+
+            // On click of each attr_opt
+            $('.attr_opt').on('click', function (event) {
+                var attr_value = $(this).attr('data-attr');
+                // Reset product variant value 
+                $('#id_variant').prop('value', '');
+                // Add active class and deactivate siblings manually 
+                $(this).addClass('active').siblings('.btn').removeClass('active');
+
+                // Clean attribute groups below current
+                var cur_attrgroup = $(this).parent();
+                $(cur_attrgroup).nextAll('.attr_input').each(
+                        function(index) {
+                           $('.attr_opt.active', this).removeClass('active');
+                           $('.attr_opt', this).addClass('disabled');
+                        }
+                    );
+
+                //Update combination
+                update_combination();
+                // Enable attr_opts in attr_groups below according to attr_variant_map
+                // We enable only the ones that contains current attr_value
+
+                for (var property in attr_variants_map) {
+                    if (attr_variants_map.hasOwnProperty(property)) {
+                        if(property.indexOf(attr_value) > -1) {
+                            var other_attrs = property.split('+'); // split to get list of attr_values
+                            //Enable attr_opts in list but only the first ones below
+                            var cur_index = other_attrs.indexOf(attr_value);
+                            //Enable next one only
+                            try {
+                                // Select the attr_opt based on data-attr value
+                                $(".attr_opt[data-attr='"+other_attrs[cur_index+1]+"']").removeClass('disabled');
+                            }
+                            catch(err) { /*Do nothing*/}
+                         }
+                    }
+                }
+
+            });
+
+            //First actions
+            function init() {
+            //First action, disable all attr_input groups but first one
+            $(".attr_input:first").nextAll('.attr_input').each(
+                        function(index) {
+                           $('.attr_opt', this).addClass('disabled');
+                        }
+                    );
+
+            //Disable addtocart button if attributes
+                if($(".attr_input").length){
+                    $('#cartadd_btn').addClass('disabled');
+                }
+            }
+
+            init();
+            //End document ready
+            });
+</script>

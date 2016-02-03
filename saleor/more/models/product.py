@@ -10,6 +10,9 @@ from django.utils.html import mark_safe
 from collections import OrderedDict
 import operator
 from django.utils.text import slugify
+from django.utils.encoding import python_2_unicode_compatible, smart_text
+from satchless.item import Item
+from django.core.urlresolvers import reverse
 
 
 class Feature(BaseModel):
@@ -36,9 +39,11 @@ class ProductManager(models.Manager):
     def get_products_from_cat(self, category):
         """ Gets products from category and child categories """
         if category is None:
-            return self.get_queryset().prefetch_related('images', 'images__thumbnail_set')
-        cats = [x.pk for x in [category] + list(category.get_children())]
-        return self.get_queryset().filter(enabled=True, category__pk__in=cats).prefetch_related('images')
+            # TODO.prefetch_related('images', 'images__thumbnail_set')
+            return self.get_queryset()
+        cats = [x.pk for x in [category] + list(category.get_descendants())]
+        # TODO.prefetch_related('images')
+        return self.get_queryset().filter(enabled=True, categories__pk__in=cats)
 
     def recommended(self, category=None, num=3):
         return self.get_products_from_cat(category).order_by('?')[:num]
@@ -46,6 +51,33 @@ class ProductManager(models.Manager):
     def featured(self, category=None):
         # .order_by('?')
         return self.get_products_from_cat(category).filter(featured=True)
+
+
+class VirtualProductVariant(Item):
+    sku = None
+    pk = None
+    name = None
+    product = None
+    attributes = {}
+
+    def get_price_per_item(self, discounts=None, **kwargs):
+        return self.product.get_price_per_item(discounts, **kwargs)
+
+    def get_price_with_discount(self, discounts=None):
+        return self.product.get_price_with_discount(discounts)
+
+    def display_product(self, attributes=None):
+        return '%s' % (smart_text(self.product))
+
+    def get_stock_quantity(self):
+        # TODO
+        return 100
+
+    def __str__(self):
+        return self.product.__str__()
+
+    def get_absolute_url(self):
+        return self.product.get_absolute_url()
 
 
 class Product(BaseModel,  saleor_models.Product):
@@ -100,6 +132,18 @@ class Product(BaseModel,  saleor_models.Product):
         """Necesario cuando hay productos y no variantes en el carrito para 
         poder obtener el precio con los descuentos aplicados"""
         return self.get_price_with_discount(discounts)
+
+    def get_virtual_variant(self):
+        variant = VirtualProductVariant()
+        variant.product = self.product
+        variant.pk = self.product.pk
+        variant.name = self.product.name
+        variant.sku = self.product.sku
+        return variant
+
+    def get_absolute_url(self):
+        return reverse('product_detail', kwargs={'slug': self.get_slug(),
+                                                 'pk': self.id})
 
 
 class ProductFeatureValue(BaseModel):

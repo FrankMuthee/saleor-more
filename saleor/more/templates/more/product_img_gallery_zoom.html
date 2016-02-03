@@ -1,0 +1,8 @@
+{% load at_size from images %}
+{% with images=product.images.all %}
+
+ <div id='product-image'>
+     <a href="{{ images.0|at_size:"normal" }}" class='zoom-img' title='{{product.name}}'>    <img class="img-responsive" src="{{ images.0|at_size:"agro_detail" }}" alt=""></a>
+                        
+</div>
+{%endwith%}

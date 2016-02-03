@@ -1,0 +1,76 @@
+{%extends "more/base_layout.html"%}
+{% load i18n %}
+{%load discounted_price price_difference from product%}
+{%block wrapper_class%}
+shop
+{%endblock%}
+{%block style%}
+{%endblock%}
+{% block title %} Detalle de producto {% endblock %}
+{% block scripts %}
+{{block.super}}
+{% endblock %}
+{%block content%}
+
+
+<div class='container'>
+    <h1>Product details</h1>
+    <div class='row'>
+        <div class='col-md-4'>
+            <img src="{{  product.images.first.image.crop.300x300  }}" alt="Image">
+        </div>
+        <div class='col-md-8'>
+            <h2>{{product.name}}</h2>
+            {#Price#}
+            <div>Price: 
+                            {%if product.discounted_price and product.discounted_price < product.price %}
+                            {#Si hay descuento mostrar esta estructura#}
+                                <span id="product-price" class='striked'>${{ product.price.net }}</span>
+                                <span id="product-price-disc">${{product.discounted_price.net}}</span>
+                            {%else%}
+                                <span id="product-price">${{ product.price.net }}</span>
+                            {%endif%}
+            </div>
+            
+            {#Description#}
+            <div>
+                {{product.description}}
+            </div>
+            {#Features#}
+             <div>
+                    <h4>Features</h4>
+                    {# product features#}
+                    <table class='ft-list'><tbody>
+                    {%for pf in product.get_features%}
+                    <tr><td><b>{{pf.feature}}:</b></td> <td> {{pf.value}}</td></tr>
+                    {%endfor%}
+                    </tbody></table>
+
+                </div>
+            {#Controls#}
+                <div class='product-controls'>
+                    <h5>Qty:</h5>
+                    <form id='product_frm' method='post'>
+                        {% csrf_token %}
+                        {{form.quantity}}
+                        <button type='button' class='qty_ctrl' data-q='+1'>+</button>
+                        <button type='button' class='qty_ctrl' data-q='-1'>-</button>
+                        <br/><br/>
+                        <div>
+                            <input type='submit' class='btn' value='Add to cart'/>
+                            <br/><br/>
+                            {% if messages %}
+                            <ul class="messages">
+                                {% for message in messages %}
+                                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+
+        </div>
+    </div>
+</div>
+        {%endblock%}

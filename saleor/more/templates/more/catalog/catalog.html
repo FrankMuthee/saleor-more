@@ -1,0 +1,36 @@
+{%extends "more/base_layout.html"%}
+{% load i18n %}
+{%block body_class%}
+product
+{%endblock%}
+
+{%block wrapper_class%}
+shop
+{%endblock%}
+{%block style%}
+
+<link rel="stylesheet" href="/static/more/css/catalog.css">
+{%endblock%}
+{% block scripts %}
+{{block.super}}
+{%endblock%}
+
+{%block content%}
+<div class='container'>
+    <h1>Catalog view</h1>
+    {%if category%}
+        <h2>Current category: {{category}}</h2>
+    {%endif%}
+    <div class='row'>
+        <div class='col-md-3'>
+            <h2 class='iblock'>Categories</h2>
+            {%include "more/catalog/category_list.html"%}
+        </div>
+        <div class='col-md-9'>
+            {%include "more/catalog/product_list.html"     %}
+            {# Paginator #}
+            {%include "more/catalog/paginator.html"     %}
+        </div>
+    </div>
+</div>
+{%endblock%}

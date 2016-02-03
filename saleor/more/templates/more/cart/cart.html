@@ -1,0 +1,147 @@
+{% extends 'more/base_layout.html' %}
+{% load gross from prices_i18n %}
+{% load i18n %}
+{% block title %}{% trans "Your cart" %} — {{ block.super }}{% endblock %}
+
+{% block breadcrumb %}
+    {{ block.super }}
+<li><a href="{% url 'cart:index' %}">{% trans "Cart" %}</a></li>
+{% endblock breadcrumb %}
+{%block style%}
+{%endblock%}
+{%block scripts%}
+    {{block.super}}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script>
+    $(document).ready(
+        function(){
+            /* Delete product line*/
+            $(".del-line").click(
+                function(){
+                    
+                    var tr_parent = $(this).parent().parent();    
+                    tr_parent.hide(250);
+                    $('input', tr_parent).attr('value', 0);
+
+                    //return false;
+                }
+            );
+        }
+    
+    );
+    </script>
+{%endblock%}
+
+
+{% block content %}
+<div class='container' id='shopping-cart'>
+    <h1> Cart</h1>
+
+    {% if cart %}
+        {% for message in messages %}
+            <div class='alert alert-{%if message.tags == "error"%}danger{%else%}success{%endif%}'>
+                {{message}}
+            </div>
+        {%endfor%}
+
+        <form role="form"  method="post" action='{%url "view_cart"%}'>
+            {% csrf_token %}
+            {{ formset.management_form }}
+            <table id='table_cart'>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="">{% trans "Image" %}</th>
+                        <th class="">{% trans "Product" %}</th>
+                        <th class="">{% trans "Cantidad" %}</th>
+                        <th class="">{% trans "Price" %}</th>
+                        <th class="">{% trans "Subtotal" %}</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <td class=""></td>
+                        <td class=""></td>
+                        <td class="">
+
+                        </td>
+                        <td class="">
+
+                        </td>
+                        <th class="">{% trans "Total" %}:</th>
+                        <td class=""><b>$ </b>{{  cart.get_total.net|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for form in formset %}
+                    <tr>
+                        <td>
+                            <button type='submit'  class='del-line' > X</button>
+                        </td>
+                        <td>
+                        <img src="{{ form.cart_line.product.product.images.first.image.crop.128x128 }}" alt="">
+                        </td>
+                        <td>
+                            <a href="{{ form.cart_line.product.get_absolute_url }}">{{ form.cart_line.product }} (ref: {{form.cart_line.product.sku}})</a>
+                        </td>
+                        <td>{{ form.quantity }}</td>
+                        <td>
+
+                        {%with product=form.cart_line.product.product%}
+                            {%if product.discounted_price and product.discounted_price < product.price %}
+                                <span class='price-discounted'> <b>$ </b>{{product.discounted_price.net|floatformat:2 }}</span>
+                                <br/>
+                                <span class='price-striked'><b>$ </b>{{product.price.net|floatformat:2 }}</span>
+                            {%else%}
+                                <span><b>$ </b>{{  product.price.net|floatformat:2 }}</span>
+                            {%endif%}
+                        {%endwith%}
+                        </td>
+                        {#this was {{gross }}#}
+                        <td><b>$ </b>{{  form.cart_line.get_total.net|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div id="cart-controls">
+                <button class="btn btn-default cartbtn-green" type="submit">
+                    {% trans "Actualizar cantidad" %}
+                </button>
+                <button class="btn btn-default cartbtn-green" type="submit">
+                    {% trans "Vaciar carrito" %}
+                </button>
+            </div>
+        </form>
+            <div id="cart-coupon">
+                {%if  request.session.coupon%}
+                <span class='coupon-desc'>Cupón: <b>{{request.session.coupon.name}} - 
+                                                    {{request.session.coupon.description}}</b>
+                                                <a href='?del_coupon'>X</a>
+                </span>
+                {%else %}
+                    <form method='GET' >
+                        <label for="id-coupon">Cupon de descuento</label>
+                        <input id="id-coupon" maxlength="50" name="coupon" type="text">
+                        <button class="btn btn-default cartbtn-green" type="submit">Introducir</button>
+                    </form>
+                {%endif%}
+            </div>
+
+                <div class='cart_btns'>
+                    <a href="{%url 'catalog-root'%}" class="btn btn-default cartbtn-green">{% trans "Seguir comprando"%}</a>
+                    <a href="" class="btn btn-default cartbtn-orange">{% trans 'Realizar orden'%}</a>
+                    <div class='clr'></div>
+                </div>
+
+        {% else %}
+        <p>
+        {% trans 'No hay productos en el carrito' %}
+        </p>
+         <div class='cart_btns'>
+                    <a href="{%url 'catalog-root'%}" class="btn btn-default cartbtn-green">{% trans "Seguir comprando"%}</a>
+                    <div class='clr'></div>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

@@ -1,0 +1,15 @@
+{%with curcat_parent=category.parent%}
+<div  id='cat-list'>
+<ul id='category-cont'>
+    {%for category in category_list%}
+    {%if category.is_root_node%}
+        {#Root category#}
+        <li><a href='{%url 'catalog' cat_id=category.pk slug=category.slug%}'><b>{{category}}</b></a></li>
+    {%else%}
+        {#Subcategories#}
+        <li ><a href='{%url 'catalog' cat_id=category.pk slug=category.slug%}'>- {{category}}</a></li>
+    {%endif%}
+    {%endfor%}
+</ul>
+</div>
+{%endwith%}

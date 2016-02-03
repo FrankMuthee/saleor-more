@@ -1,0 +1,7 @@
+Hola
+
+Su orden ha sido creada exitosamente. En estos momentos estamos procesando su pedido y nos comunicaremos con usted para acordar los medios de pago y envio. Puede ver los detalles de la orden en la siguiente dirección:
+{{ order_url }}
+
+Atentamente,
+Agrotécnico

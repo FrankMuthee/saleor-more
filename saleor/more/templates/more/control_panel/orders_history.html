@@ -1,0 +1,53 @@
+{% extends "web_shop/control_panel/control_panel.html" %}
+{% load gross from prices_i18n %}
+{% load i18n %}
+
+{% block active_orders %}active{% endblock %}
+
+{% block control_panel_content %}
+    <div class="panel panel-default">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th class="col-sm-1">
+                        {% trans "Orden #" %}
+                    </th>
+                    <th class="col-sm-3">
+                        {% trans "Fecha" %}
+                    </th>
+                    <th class="col-sm-2">
+                        {% trans "Precio" %}
+                    </th>
+                    <th class="col-sm-1">
+                        {% trans "Estado" %}
+                    </th>
+                    <th class="col-sm-3">
+                        {% trans "Estado actualizado en" %}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td class="col-sm-1">
+                            <a href="{% url 'order_details' order.token%}" >{{ order }}</a>
+                        </td>
+                        <td class="col-sm-3">
+                            {{ order.created }}
+                        </td>
+                        <td class="col-sm-2">
+                            ${{ order.get_total.gross|floatformat:0 }}
+                        </td>
+                        <td class="col-sm-1">
+                            <span class="label label-default">{{ order.get_status_display }}</span>
+                        </td>
+                        <td class="col-sm-3">
+                            {{ order.last_status_change }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+

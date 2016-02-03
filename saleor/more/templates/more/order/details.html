@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% load as_vertical_form from bootstrap %}
+{% load gross from prices_i18n %}
+{% load i18n %}
+
+{% block title %}{% trans "Order" %} {{ order }} — {{ block.super }}{% endblock %}
+
+{%block style%}
+<link rel="stylesheet" href="/static/web_shop/css/cart.css">
+
+{%endblock%}
+
+{% block content %}
+    {# This view is available by just knowing url,          #}
+    {# so we don't show all details (like delivery address) #}
+    {# unless current user is owner of the order.           #}
+<div class='container' id='order-container'>
+            {% if order.status == 'procesando' and user == order.user%}
+            <div class='alert alert-success'>
+                <p>Su órden ha sido enviada y  está en proceso de verificación. En breve nos estaremos comunicando con usted para el acuerdo de pago y retiro de su producto. Muchas gracias por su compra.
+            </p>
+        </div>
+            {%endif%}
+
+    <div class="row">
+        <div class="col-sm-6">
+            <h3>{% trans "Detalles de la órden" %}</h3>
+            <p>{% trans "Número de órden: " %}: {{ order }}</p>
+            {% with total=order.get_total %}
+                <p>
+                    {% trans "Total" %}:
+                    <strong>$ {{ total.gross|floatformat:2  }}</strong>
+                    {% if total.tax %}
+                        ({% blocktrans with tax=total.tax|floatformat:2 currency=total.currency %}includes {{ tax }} <span class="currency">{{ currency }}</span> tax{% endblocktrans %})
+                    {% endif %}
+                </p>
+            {% endwith %}
+            <p>{% trans "Estado" %}: <span class="label label-default">{{ order.get_status_display }}</span></p>
+        </div>
+        {% if order.user == user %}
+            <div class="col-sm-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        {% trans "Dirección de envío" %}
+                    </div>
+                    <div class="panel-body">
+                        <address>{% include "userprofile/snippets/address-details.html" with address=order.billing_address %}</address>
+                    </div>
+                </div>
+            </div>
+            <h3></h3>
+        {% endif %}
+    </div>
+
+    {% for group in groups %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                {% blocktrans with number=forloop.counter %}Grupo de productos #{{ number }}{% endblocktrans %}
+            </div>
+            <div class="panel-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-4">{% trans "Name" %}</th>
+                            <th class="col-sm-2">{% trans "Price" %}</th>
+                            <th class="col-sm-2">{% trans "Subtotal" %}</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th class="col-sm-4"></th>
+                            <th class="col-sm-2">{% trans "Total" %}</th>
+                            <th class="col-sm-2">$ {{ group.get_total.gross|floatformat:2  }}</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        {% for item in group %}
+                            <tr>
+                                <td class="col-sm-4">{{ item.product }}{% if item.quantity != 1 %} <em>×{{ item.quantity }}</em>{% endif %} &nbsp;(ref: {{item.product.product.sku}})</td>
+                                <td class="col-sm-2">$ {{ item.get_price_per_item.gross |floatformat:2 }}</td>
+                                <td class="col-sm-2">$ {{ item.get_total.gross |floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                        {% if group.price.gross %}
+                            <tr>
+                                <td class="col-sm-4">
+                                    {% trans "Shipping" %} ({{ group.method }})
+                                </td>
+                                <td class="col-sm-2">$ {{ group.price.gross |floatformat:2 }}</td>
+                                <td class="col-sm-2">$ {{ group.price.gross |floatformat:2 }}</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                {% if order.user == user %}
+                    {% if group.email %}
+                        <p>{% trans "Addressee" %}: {{ group.email }}</p>
+                    {% elif group.address %}
+                        <p>{% trans "Addressee" %}: {% include "userprofile/snippets/address-short.html" with address=group.address %}</p>
+                    {% endif %}
+                    {#<p>{% trans "Estado" %}: <span class="label label-default">{{ group.get_status_display }}</span></p>#}
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    {% if show_payment_logic %}
+        {% if not order.is_fully_paid %}
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            {% if waiting_payment %}
+                                <form method="post" action="{% url 'order:cancel-payment' token=order.token %}">
+                                    {% csrf_token %}
+                                    <legend>{% trans "Payment pending" %}</legend>
+                                    <p>{% trans "We are currently waiting for an external service to authorize your payment for this order." %}</p>
+                                    <p>{% trans "Current status" %}: <span class="label label-default">{{ waiting_payment.get_status_display }}</span></p>
+                                    <p>{% trans "Unless you are absolutely sure that the process will not complete (for example you have closed the browser window before paying), you should wait before attempting a new payment. Please be warned that if you try again and the previous transaction succeeds you might end up being charged twice." %}</p>
+                                    {{ waiting_payment_form|as_vertical_form }}
+                                    <button type="submit" class="btn btn-danger">{% trans "I understand, allow me to pay again" %}</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url "order:details" token=order.token %}">
+                                    {% csrf_token %}
+                                    <legend>{% trans "Pay for your order" %}</legend>
+                                    {{ payment_form|as_vertical_form }}
+                                    <div class="form-group">
+                                        {% block form_submit %}
+                                            <button type="submit" class="btn btn-primary">
+                                                {% trans "Make a payment" %}
+                                            </button>
+                                        {% endblock %}
+                                    </div>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% if payments %}
+            <h3>{% trans "Payment history" %}</h3>
+            <ul>
+                {% for payment in payments %}
+                    <li>{{ payment.created|date }}, {{ payment.created|time }} — <span class="label label-default">{{ payment.get_status_display }}</span></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock content %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/order_details.js"></script>
+{% endblock footer_scripts %}

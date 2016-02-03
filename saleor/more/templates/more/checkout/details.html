@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Checkout" %} — {{ block.super }}{% endblock %}
+
+{% block outerbreadcrumb %}{% endblock %}
+
+{%block style%}
+<link rel="stylesheet" href="/static/web_shop/css/cart.css">
+{%endblock%}
+
+
+{% block content %}
+<div id='checkout-container' class='container'>
+<ul class="nav nav-pills nav-justified">
+    {% for stepitem in checkout %}
+    <li class="{% if stepitem == step %}active{% endif %}">
+        <a href="{{ stepitem.get_absolute_url }}">{% if stepitem %}<i class="glyphicon glyphicon-ok-sign"></i> {% endif %}{{ stepitem.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<hr>
+{% block step_info %}{% endblock %}
+
+{% block forms %}{% endblock %}
+
+</div>
+{% endblock content %}
