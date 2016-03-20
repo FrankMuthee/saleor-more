@@ -10,7 +10,7 @@ from django.db import models
 from django.db.models import Q, Manager
 from django.utils.encoding import python_2_unicode_compatible, smart_text
 from django.utils.text import slugify
-from django.utils.translation import pgettext_lazy
+from django.utils.translation import pgettext_lazy, ugettext_lazy as _
 from django_prices.models import PriceField
 from jsonfield import JSONField
 from model_utils.managers import InheritanceManager
@@ -58,7 +58,8 @@ class Category(MPTTModel):
             [node.slug for node in self.get_ancestors(include_self=True)])
 
     class Meta:
-        verbose_name_plural = 'categories'
+        verbose_name = _('Category')
+        verbose_name_plural = _('Categories')
         app_label = 'product'
 
     def set_hidden_descendants(self, hidden):
