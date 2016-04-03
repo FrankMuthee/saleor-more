@@ -17,11 +17,15 @@ class CatalogView(ListView):
         self.category = None
         if 'cat_id' in self.kwargs:
             self.category = get_object_or_404(Category, pk=self.kwargs['cat_id'])
-        if self.category is None:
-            return Product.objects.all() # TODO que productoss obtener por defecto?
         # Queryset overriding
-        return Product.objects.get_products_from_cat(self.category)
-
+        if self.category is None:
+            queryset = Product.objects.all() # TODO que productoss obtener por defecto?
+        else:
+            queryset = Product.objects.get_products_from_cat(self.category)
+        ordering = self.get_ordering()
+        if ordering:
+            queryset = queryset.order_by(ordering)
+        return queryset
     
     def get_context_data(self, **kwargs):
         """ Show all products if no category, else, filter by cat """
