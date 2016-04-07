@@ -39,7 +39,7 @@ class Category(MPTTModel):
         verbose_name=pgettext_lazy('Category field', 'parent'))
     hidden = models.BooleanField(
         pgettext_lazy('Category field', 'hidden'), default=False)
-
+    ref = models.CharField('Ref', max_length=50, null=True)
     objects = Manager()
     tree = TreeManager()
 
