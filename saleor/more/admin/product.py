@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.contrib import admin
 from saleor.more.models import Product, ProductFeatureValue
 from saleor.product.models import ProductImage, Category
@@ -10,6 +11,7 @@ class ProductImagesInline(admin.TabularInline):
     model = ProductImage
     extra = 1
     max_num = 1
+    verbose_name = "Imágenes de producto"
 
     def queryset(self, request):
         qs = super(ProductImagesInline, self).queryset(request).prefetch_related(
@@ -43,3 +45,4 @@ class ProductAdmin(admin.ModelAdmin):
     def category(self, obj):
         return obj.get_first_category()
     category.short_description = Category._meta.verbose_name
+    category.admin_order_field = 'categories__name'

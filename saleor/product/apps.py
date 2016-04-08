@@ -4,5 +4,5 @@ from django.apps import AppConfig
 
 
 class MoreConfig(AppConfig):
-    name = 'saleor.more'
-    verbose_name = 'Productos de catalogo'
+    name = 'saleor.product'
+    verbose_name = 'Catalogo'

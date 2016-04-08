@@ -84,7 +84,7 @@ msgstr ""
 #: models/base.py:89
 msgctxt "Product field"
 msgid "weight"
-msgstr ""
+msgstr "Peso"
 
 #: models/base.py:92
 msgctxt "Product field"
@@ -179,7 +179,7 @@ msgstr ""
 #: models/images.py:25
 msgctxt "Product image field"
 msgid "short description"
-msgstr ""
+msgstr "Descripción corta"
 
 #: templates/category/_items.html:26
 msgid "Discount!"
